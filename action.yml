@@ -1,0 +1,31 @@
+name: "OCI login and push"
+description: "GitHub Action to login and push to an OCI registry"
+author: "lucasmelin"
+inputs:
+  registry:
+    description: "Address of the OCI registry"
+    required: true
+  username:
+    description: "Username used to log into the OCI registry"
+    required: false
+  password:
+    description: "Password or personal access token used to log into the OCI registry"
+    required: false
+  tags:
+    description: "Tags to use for OCI image"
+    required: true
+  artifact:
+    description: "Path to the artifact that should be pushed to the OCI registry"
+    required: true
+  logout:
+    description: "Log out from the OCI registry at the end of a job"
+    default: true
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - run: oras login ${{ inputs.registry }} --username ${{ inputs.username }} --password ${{ inputs.password }}
+      shell: bash
+    - run: oras push ${{ inputs.registry }}/${{ inputs.tags }} --manifest-config /dev/null:application/vnd.unknown.config.v1+json ${{ inputs.artifact }}
+    - run: oras logout
+      if: ${{ inputs.logout == true }
